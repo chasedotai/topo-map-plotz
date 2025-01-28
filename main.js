@@ -4,40 +4,50 @@ import { SimplexNoise } from 'https://cdn.skypack.dev/three@0.159.0/examples/jsm
 
 class TopographicalMap {
     constructor() {
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.renderer = new THREE.WebGLRenderer();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(this.renderer.domElement);
+        try {
+            console.log('Initializing Three.js scene...');
+            this.scene = new THREE.Scene();
+            this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            console.log('Creating renderer...');
+            this.renderer = new THREE.WebGLRenderer({ antialias: true });
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(this.renderer.domElement);
 
-        // Setup camera position
-        this.camera.position.z = 5;
-        this.camera.position.y = 2;
+            // Setup camera position
+            this.camera.position.z = 5;
+            this.camera.position.y = 2;
 
-        // Add orbit controls
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.enableDamping = true;
+            // Add orbit controls
+            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            this.controls.enableDamping = true;
 
-        // Add noise generator
-        this.noise = new SimplexNoise();
-        
-        // Create terrain
-        this.createTerrain();
+            // Add noise generator
+            this.noise = new SimplexNoise();
+            
+            // Create terrain
+            this.createTerrain();
 
-        // Add lights
-        this.addLights();
+            // Add lights
+            this.addLights();
 
-        // Start animation loop
-        this.animate();
+            // Start animation loop
+            this.animate();
 
-        // Handle window resize
-        window.addEventListener('resize', () => this.onWindowResize(), false);
+            // Handle window resize
+            window.addEventListener('resize', () => this.onWindowResize(), false);
 
-        // Setup SVG export
-        document.getElementById('downloadSVG').addEventListener('click', () => this.exportSVG());
+            // Setup SVG export
+            document.getElementById('downloadSVG').addEventListener('click', () => this.exportSVG());
 
-        // Setup generate button
-        document.getElementById('generateMap').addEventListener('click', () => this.generateNewMap());
+            // Setup generate button
+            document.getElementById('generateMap').addEventListener('click', () => this.generateNewMap());
+
+            console.log('Setup complete');
+        } catch (error) {
+            console.error('Error in constructor:', error);
+            throw error;
+        }
     }
 
     createTerrain() {
@@ -185,5 +195,15 @@ class TopographicalMap {
     }
 }
 
-// Initialize the app
-new TopographicalMap(); 
+// Change the initialization at the bottom from:
+// new TopographicalMap();
+
+// To this:
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const app = new TopographicalMap();
+        console.log('App initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize app:', error);
+    }
+}); 
