@@ -1,6 +1,6 @@
-import * as THREE from 'https://cdn.skypack.dev/three@0.159.0';
-import { OrbitControls } from 'https://cdn.skypack.dev/three@0.159.0/examples/jsm/controls/OrbitControls.js';
-import { SimplexNoise } from 'https://cdn.skypack.dev/three@0.159.0/examples/jsm/math/SimplexNoise.js';
+import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/three.module.min.js';
+import { OrbitControls } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/examples/jsm/controls/OrbitControls.js';
+import { SimplexNoise } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/examples/jsm/math/SimplexNoise.js';
 
 class TopographicalMap {
     constructor() {
