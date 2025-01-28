@@ -1,6 +1,45 @@
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/three.module.min.js';
-import { OrbitControls } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/examples/jsm/controls/OrbitControls.js';
-import { SimplexNoise } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/examples/jsm/math/SimplexNoise.js';
+import * as THREE from 'https://unpkg.com/three@0.159.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.159.0/examples/jsm/controls/OrbitControls.js';
+
+function makeNoise2D(random = Math.random) {
+    const p = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) p[i] = i;
+
+    let n;
+    let q;
+    for (let i = 255; i > 0; i--) {
+        n = Math.floor((i + 1) * random());
+        q = p[i];
+        p[i] = p[n];
+        p[n] = q;
+    }
+
+    const perm = new Uint8Array(512);
+    const permMod12 = new Uint8Array(512);
+    for (let i = 0; i < 512; i++) {
+        perm[i] = p[i & 255];
+        permMod12[i] = perm[i] % 12;
+    }
+
+    return (x, y) => {
+        // Noise implementation here
+        const F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
+        const G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
+        
+        const s = (x + y) * F2;
+        const i = Math.floor(x + s);
+        const j = Math.floor(y + s);
+        
+        const t = (i + j) * G2;
+        const X0 = i - t;
+        const Y0 = j - t;
+        const x0 = x - X0;
+        const y0 = y - Y0;
+        
+        const n0 = x0 * x0 + y0 * y0;
+        return n0 * (Math.sin(x0) + Math.cos(y0)) * 0.5;
+    };
+}
 
 class TopographicalMap {
     constructor() {
@@ -22,8 +61,10 @@ class TopographicalMap {
             this.controls = new OrbitControls(this.camera, this.renderer.domElement);
             this.controls.enableDamping = true;
 
-            // Add noise generator
-            this.noise = new SimplexNoise();
+            // Replace SimplexNoise with our custom noise function
+            this.noise = {
+                noise: makeNoise2D()
+            };
             
             // Create terrain
             this.createTerrain();
@@ -195,10 +236,7 @@ class TopographicalMap {
     }
 }
 
-// Change the initialization at the bottom from:
-// new TopographicalMap();
-
-// To this:
+// Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
     try {
         const app = new TopographicalMap();
