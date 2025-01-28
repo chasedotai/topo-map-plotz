@@ -1,5 +1,6 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/controls/OrbitControls.js';
+import { SimplexNoise } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/math/SimplexNoise.js';
 
 class TopographicalMap {
     constructor() {
@@ -17,6 +18,9 @@ class TopographicalMap {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
 
+        // Add noise generator
+        this.noise = new SimplexNoise();
+        
         // Create terrain
         this.createTerrain();
 
@@ -31,6 +35,9 @@ class TopographicalMap {
 
         // Setup SVG export
         document.getElementById('downloadSVG').addEventListener('click', () => this.exportSVG());
+
+        // Setup generate button
+        document.getElementById('generateMap').addEventListener('click', () => this.generateNewMap());
     }
 
     createTerrain() {
@@ -40,6 +47,8 @@ class TopographicalMap {
             wireframe: true,
         });
 
+        this.seed = Math.random() * 1000;
+        
         // Generate height map
         const vertices = geometry.attributes.position.array;
         for (let i = 0; i < vertices.length; i += 3) {
@@ -54,8 +63,16 @@ class TopographicalMap {
     }
 
     generateHeight(x, y) {
-        // Simple noise function for demo
-        return Math.sin(x) * Math.cos(y) * 0.5;
+        // Create more interesting terrain with multiple octaves of noise
+        const scale = 0.5;
+        let height = 0;
+        
+        // Add several layers of noise at different frequencies
+        height += this.noise.noise(x * scale + this.seed, y * scale + this.seed) * 1.0;
+        height += this.noise.noise(x * scale * 2 + this.seed, y * scale * 2 + this.seed) * 0.5;
+        height += this.noise.noise(x * scale * 4 + this.seed, y * scale * 4 + this.seed) * 0.25;
+        
+        return height;
     }
 
     addLights() {
@@ -149,6 +166,22 @@ class TopographicalMap {
 
     isTriangleVisible(a, b, c) {
         return a.z < 1 && b.z < 1 && c.z < 1;
+    }
+
+    generateNewMap() {
+        // Generate new seed for randomization
+        this.seed = Math.random() * 1000;
+        this.updateTerrain();
+    }
+
+    updateTerrain() {
+        const vertices = this.terrain.geometry.attributes.position.array;
+        for (let i = 0; i < vertices.length; i += 3) {
+            const x = vertices[i];
+            const y = vertices[i + 1];
+            vertices[i + 2] = this.generateHeight(x, y);
+        }
+        this.terrain.geometry.attributes.position.needsUpdate = true;
     }
 }
 
